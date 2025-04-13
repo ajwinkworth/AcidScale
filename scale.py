@@ -9,6 +9,9 @@ def main():
     # Initialize HX711
     hx = HX711(DOUT_PIN, SCK_PIN, gain=GAIN)
     
+    # Load calibration data
+    hx.load_calibration()
+
     try:
         print("Press Ctrl+C to exit")
         print("Reading weight...")

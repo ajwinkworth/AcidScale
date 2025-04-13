@@ -1,5 +1,6 @@
 import RPi.GPIO as GPIO
 import time
+import json
 
 class HX711:
     def __init__(self, dout, pd_sck, gain=128):
@@ -112,6 +113,39 @@ class HX711:
         raw_value = self.read()
         self.scale = known_weight / raw_value
         
+    def save_calibration(self, filename="calibration.json"):
+        """
+        Save calibration data (offset and scale) to a file.
+
+        Args:
+            filename (str): Path to the file to save calibration data.
+        """
+        data = {'offset': self.offset, 'scale': self.scale}
+        try:
+            with open(filename, 'w') as f:
+                json.dump(data, f)
+            print(f"Calibration data saved to {filename}")
+        except IOError as e:
+            print(f"Error saving calibration data to {filename}: {e}")
+
+    def load_calibration(self, filename="calibration.json"):
+        """
+        Load calibration data (offset and scale) from a file.
+
+        Args:
+            filename (str): Path to the file containing calibration data.
+        """
+        try:
+            with open(filename, 'r') as f:
+                data = json.load(f)
+                self.offset = data.get('offset', self.offset)
+                self.scale = data.get('scale', self.scale)
+            print(f"Calibration data loaded from {filename}")
+        except FileNotFoundError:
+            print(f"Calibration file {filename} not found. Using default values.")
+        except (IOError, json.JSONDecodeError) as e:
+            print(f"Error loading calibration data from {filename}: {e}. Using default values.")
+
     def cleanup(self):
         """Clean up GPIO resources."""
         GPIO.cleanup() 

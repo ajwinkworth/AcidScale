@@ -26,6 +26,9 @@ def main():
         hx.calibrate(CALIBRATION_WEIGHT)
         print("Calibration complete!")
         
+        # Save calibration data
+        hx.save_calibration()
+        
         # Test reading
         print("\nTesting scale...")
         for _ in range(5):
