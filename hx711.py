@@ -134,6 +134,7 @@ class HX711:
         dir_path = Path(cal_dir)
         dir_path.mkdir(parents=True, exist_ok=True)
         self._cal_path = dir_path / Path('calibration')
+        self._cal = 1.0  # Default to raw output if no calibration file
         if self._cal_path.is_file():
             cal_file = open(self._cal_path, 'r')
             cal_str = cal_file.read()
@@ -141,9 +142,9 @@ class HX711:
             try:  # Check for valid calibration constant.
                 cal = float(cal_str)
             except ValueError:
-                cal = DEFAULT_CALIBRATION
+                cal = 1.0
             if cal <= 0.0:
-                cal = DEFAULT_CALIBRATION
+                cal = 1.0
             self._cal = cal
 
         # Start the HX711.

@@ -1,6 +1,7 @@
 from hx711 import HX711
 from config import DOUT_PIN, SCK_PIN, GAIN, CALIBRATION_WEIGHT
 import time
+import pigpio
 
 def main():
     print("HX711 Scale Calibration")
@@ -8,13 +9,17 @@ def main():
     print("Please ensure no weight is on the scale")
     input("Press Enter when ready...")
     
-    # Initialize HX711
-    hx = HX711(DOUT_PIN, SCK_PIN, gain=GAIN)
+    # Initialize pigpio and HX711
+    pi = pigpio.pi()
+    if not pi.connected:
+        print("Failed to connect to pigpio daemon.")
+        return
+    hx = HX711(pi, clock=SCK_PIN, data=DOUT_PIN, mode=GAIN)
     
     try:
         # Tare the scale
         print("Taring scale...")
-        hx.tare()
+        hx.zero()
         print("Tare complete!")
         
         # Wait for calibration weight
@@ -26,20 +31,17 @@ def main():
         hx.calibrate(CALIBRATION_WEIGHT)
         print("Calibration complete!")
         
-        # Save calibration data
-        hx.save_calibration()
-        
         # Test reading
         print("\nTesting scale...")
         for _ in range(5):
-            weight = hx.get_weight()
+            weight = hx.read()
             print(f"Weight: {weight:.1f}g")
             time.sleep(1)
             
     except KeyboardInterrupt:
         print("\nCalibration cancelled by user")
     finally:
-        hx.cleanup()
+        pi.stop()
 
 if __name__ == "__main__":
     main() 
