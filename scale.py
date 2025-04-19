@@ -1,3 +1,4 @@
+import pigpio
 from hx711 import HX711
 from config import DOUT_PIN, SCK_PIN, GAIN, SAMPLES
 import time
@@ -6,25 +7,33 @@ def main():
     print("HX711 Scale")
     print("===========")
     
-    # Initialize HX711
-    hx = HX711(DOUT_PIN, SCK_PIN, gain=GAIN)
-    
-    # Load calibration data
-    hx.load_calibration()
+    # Initialize pigpio
+    pi = pigpio.pi()
+    if not pi.connected:
+        print("Failed to connect to pigpio daemon.")
+        return
+
+    # Initialize HX711 (papamac's version)
+    hx = HX711(pi, data=DOUT_PIN, clock=SCK_PIN, mode=GAIN)
 
     try:
         print("Press Ctrl+C to exit")
         print("Reading weight...")
         
         while True:
-            weight = hx.get_weight(samples=SAMPLES)
+            weight = hx.read()
             print(f"\rWeight: {weight:.1f}g", end="")
             time.sleep(0.5)
             
     except KeyboardInterrupt:
         print("\nScale stopped by user")
     finally:
-        hx.cleanup()
+        hx._gpio.stop()  # Properly stop pigpio
 
 if __name__ == "__main__":
-    main() 
+    main()
+
+# Usage Example:
+# Ensure pigpio daemon is running (sudo pigpiod)
+# Adjust DOUT_PIN, SCK_PIN, GAIN in config.py as needed
+# Run: python scale.py 
