@@ -58,6 +58,7 @@ from math import sqrt
 from pathlib import Path
 from threading import Event
 from time import sleep
+import os
 
 import pigpio
 
@@ -73,7 +74,7 @@ DEFAULT_MODE = CH_A_GAIN_128   # Default mode.
 GAINS = (None, 128, 32, 64)    # Gain values indexed by mode.
 DEFAULT_WEIGHT = 100           # Default calibration weight in grams.
 DEFAULT_CALIBRATION = 17.5955  # Default calibration constant for my scale.
-CALIBRATION_DIR = '/usr/local/etc/scale'  # Directory containing the scale
+CALIBRATION_DIR = os.path.expanduser('~/.AcidScale/scale_data')  # Directory containing the scale
 #                                           calibration file.
 
 
