@@ -59,6 +59,7 @@ from pathlib import Path
 from threading import Event
 from time import sleep
 import os
+from config import HX711_TIMEOUT
 
 import pigpio
 
@@ -179,8 +180,9 @@ class HX711:
         if not level and not self._pulse_num:
             self._gpio.wave_chain(self._wave_chain)
 
-    def _wait_for_data(self):
-        self._data_ready.wait()
+    def _wait_for_data(self, timeout=HX711_TIMEOUT):
+        if not self._data_ready.wait(timeout):
+            print(f"Warning: Timeout waiting for HX711 data ready (>{timeout}s)")
         self._data_ready.clear()
 
     def _get_raw_data_avg(self, num_readings=30):
@@ -206,8 +208,7 @@ class HX711:
         self._offset = self._get_raw_data_avg()
 
     def calibrate(self, weight=DEFAULT_WEIGHT):
-        self._cal = (self._get_raw_data_avg() - self._offset) / (self._gain *
-                                                                 weight)
+        self._cal = (self._get_raw_data_avg() - self._offset) / (self._gain * weight)
         cal_file = open(self._cal_path, 'w')
         cal_file.write(str(self._cal))
         cal_file.close()

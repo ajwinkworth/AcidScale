@@ -21,8 +21,18 @@ def main():
         print("Reading weight...")
         
         while True:
-            weight = hx.read()
-            print(f"\rWeight: {weight:.1f}g", end="")
+            readings = []
+            error_values = {2097151, 8388607, 4194303, 262143, 65535}
+            for _ in range(SAMPLES):
+                w = hx.read()
+                if w not in error_values and not (w is None or isinstance(w, str)):
+                    readings.append(w)
+                time.sleep(0.05)
+            if readings:
+                avg_weight = sum(readings) / len(readings)
+                print(f"\rWeight: {avg_weight:.1f}g", end="")
+            else:
+                print("\rWeight: N/A (error)", end="")
             time.sleep(0.5)
             
     except KeyboardInterrupt:
